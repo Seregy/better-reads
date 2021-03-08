@@ -8,6 +8,7 @@
 		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.seregy77</groupId>
 	<artifactId>better-reads</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -16,6 +17,17 @@
 
 	<properties>
 		<java.version>14</java.version>
+
+		<better-reads-api.version>0.0.1-SNAPSHOT</better-reads-api.version>
+		<better-reads-api.basedir>${project.build.directory}/better-reads-api/openapi</better-reads-api.basedir>
+		<better-reads-api.path>${project.build.directory}/better-reads-api/openapi/better-reads-api.yaml</better-reads-api.path>
+		<better-reads-api.prefix>com.seregy77.betterreads</better-reads-api.prefix>
+
+		<jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
+		<springfox-swagger2.version>3.0.0</springfox-swagger2.version>
+		<openapi-generator-maven-plugin.version>5.0.1</openapi-generator-maven-plugin.version>
+		<maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
+		<maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
 	</properties>
 
 	<dependencies>
@@ -23,9 +35,32 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-r2dbc</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>${jackson-databind-nullable.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${springfox-swagger2.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.r2dbc</groupId>
+			<artifactId>r2dbc-h2</artifactId>
 		</dependency>
 
 		<dependency>
@@ -33,6 +68,7 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -56,6 +92,77 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${maven-dependency-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<artifactItems>
+						<artifactItem>
+							<groupId>com.seregy77</groupId>
+							<artifactId>better-reads-api</artifactId>
+							<version>${better-reads-api.version}</version>
+							<type>jar</type>
+							<outputDirectory>${better-reads-api.basedir}</outputDirectory>
+							<includes>**/*.yaml</includes>
+						</artifactItem>
+					</artifactItems>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>${openapi-generator-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${better-reads-api.path}</inputSpec>
+							<generatorName>spring</generatorName>
+							<output>${project.build.directory}/generated-sources/open-api/</output>
+							<configOptions>
+								<sourceFolder>src/main/java</sourceFolder>
+								<apiPackage>${better-reads-api.prefix}.rest.api.generated</apiPackage>
+								<modelPackage>${better-reads-api.prefix}.rest.domain.generated
+								</modelPackage>
+								<interfaceOnly>true</interfaceOnly>
+								<skipOverwrite>true</skipOverwrite>
+								<dateLibrary>java8</dateLibrary>
+								<implicitHeaders>false</implicitHeaders>
+								<delegatePattern>true</delegatePattern>
+								<useTags>true</useTags>
+								<library>spring-boot</library>
+								<swaggerDocketConfig>false</swaggerDocketConfig>
+								<reactive>true</reactive>
+							</configOptions>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateModelDocumentation>false</generateModelDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>
